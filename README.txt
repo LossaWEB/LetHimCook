@@ -1,10 +1,22 @@
-# LetHimCook
+# 🍳 LetHimCook
 
-Application de recettes (Node.js + Express + EJS + SQLite).
+Projet réalisé dans le cadre de la formation DWWM.  
+LetHimCook est une application de gestion de recettes permettant de créer, modifier, noter, commenter et enregistrer ses plats préférés.
+
+---
+
+## 🚀 Installation
+
+1. **Télécharger ou cloner le projet :**
+   ```bash
+   git clone https://github.com/LossaWEB/LetHimCook.git
+   cd LetHimCook
+
 
 ## 🔧 Prérequis
 - Node.js installé (version récente LTS)
 - npm (fourni avec Node.js)
+
 
 ## ⚡ Lancement rapide
 ```bash
