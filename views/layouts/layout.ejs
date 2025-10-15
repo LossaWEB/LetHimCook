@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr" class="">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title><%= typeof pageTitle !== 'undefined' ? pageTitle + ' — ' : '' %>LetHimCook</title>
+
+  <meta name="description" content="LetHimCook — recettes, notes, favoris, commentaires. Mode cuisine, tags, recherche avancée." />
+  <meta property="og:title" content="LetHimCook" />
+  <meta property="og:description" content="Recettes locales, propres et complètes." />
+  <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><text y="50%" x="50%" dominant-baseline="middle" text-anchor="middle" font-size="40">🍳</text></svg>' />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root { color-scheme: light; }
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    .skip-link{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
+    .skip-link:focus{position:static;width:auto;height:auto;padding:.5rem .75rem;background:#0f172a;color:#fff;border-radius:.5rem}
+
+    /* Mode sombre simple */
+    body.dark { background:#0b1220; color:#e5e7eb; }
+    body.dark header { background: rgba(15,23,42,.7); border-color:#1f2937; }
+    body.dark .card { background:#0f172a; border-color:#1f2937; }
+    body.dark .muted { color:#9ca3af; }
+    body.dark .plain { background:#111827; border-color:#1f2937; color:#e5e7eb; }
+
+    /* Impression A4 clean */
+    @media print {
+      header, nav, footer, .no-print { display: none !important; }
+      main { padding: 0 !important; }
+      .print-block { page-break-inside: avoid; }
+      body { color:#000; background:#fff; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+  <a href="#main" class="skip-link">Aller au contenu principal</a>
+
+  <header class="sticky top-0 z-20 bg-white/80 backdrop-blur border-b">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2 font-extrabold text-lg" aria-label="Accueil LetHimCook">
+        <span class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-white">🍳</span>
+        <span>LetHimCook</span>
+      </a>
+      <nav class="flex items-center gap-2" aria-label="Navigation">
+        <a class="px-3 py-2 rounded-lg hover:bg-slate-100 plain" href="/recipes">Recettes</a>
+        <% if (user) { %>
+          <a class="px-3 py-2 rounded-lg hover:bg-slate-100 plain" href="/recipes/new">Nouvelle recette</a>
+          <a class="px-3 py-2 rounded-lg hover:bg-slate-100 plain" href="/recipes/quick-new">Recette rapide</a>
+          <a class="px-3 py-2 rounded-lg hover:bg-slate-100 plain" href="/me">Profil</a>
+          <a class="px-3 py-2 rounded-lg hover:bg-slate-100 plain" href="/trash">Corbeille</a>
+          <a class="px-3 py-2 rounded-lg hover:bg-slate-100 plain" href="/admin/orphans">Orphelins</a>
+          <form action="/logout" method="post" class="inline">
+            <button class="px-3 py-2 rounded-lg bg-slate-900 text-white hover:bg-slate-800">Logout (<%= user.display_name %>)</button>
+          </form>
+        <% } else { %>
+          <a class="px-3 py-2 rounded-lg bg-slate-900 text-white hover:bg-slate-800" href="/login">Login</a>
+          <a class="px-3 py-2 rounded-lg bg-slate-200 hover:bg-slate-300" href="/register">Register</a>
+        <% } %>
+        <button id="themeToggle" class="px-3 py-2 rounded-lg border no-print">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <% if (flash) { %>
+    <div class="max-w-6xl mx-auto px-4 mt-4" role="status" aria-live="polite">
+      <div class="rounded-xl p-3 <%= flash.type==='success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-slate-100 text-slate-700 border' %>">
+        <%= flash.message %>
+      </div>
+    </div>
+  <% } %>
+
+  <main id="main" class="max-w-6xl mx-auto px-4 py-8">
+    <%- body %>
+  </main>
+
+  <footer class="py-10 text-center text-sm text-slate-500">
+    © <%= new Date().getFullYear() %> LetHimCook
+  </footer>
+
+  <script>
+    // Dark mode simple
+    const toggle = document.getElementById('themeToggle');
+    const load = () => { if(localStorage.getItem('theme')==='dark'){document.body.classList.add('dark'); toggle.textContent='☀️';} }
+    const save = () => { const d = document.body.classList.toggle('dark'); localStorage.setItem('theme', d?'dark':'light'); toggle.textContent = d?'☀️':'🌙'; }
+    load(); toggle?.addEventListener('click', save);
+  </script>
+</body>
+</html>

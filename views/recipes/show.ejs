@@ -1,0 +1,284 @@
+<article class="bg-white rounded-2xl border shadow-sm overflow-hidden card print-block">
+  <% if (recipe.image_path) { %>
+    <img class="w-full max-h-[420px] object-cover" src="<%= recipe.image_path %>" alt="<%= recipe.title %>" />
+  <% } %>
+
+  <div class="p-6 md:p-8">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-extrabold mb-1"><%= recipe.title %></h1>
+        <p class="muted mb-2"><%= recipe.category %> · <%= recipe.difficulty %> · <%= recipe.duration_minutes %> min</p>
+        <p class="muted text-sm">
+          <% if (recipe.time_active) { %>Actif: <%= recipe.time_active %> min · <% } %>
+          <% if (recipe.time_rest) { %>Repos: <%= recipe.time_rest %> min · <% } %>
+          Total: <%= recipe.time_total || recipe.duration_minutes %> min
+        </p>
+        <% if (recipe.kcal) { %>
+          <p class="muted text-sm">Nutrition/portion: <%= recipe.kcal %> kcal · P: <%= recipe.protein||0 %> g · L: <%= recipe.fat||0 %> g · G: <%= recipe.carb||0 %> g</p>
+        <% } %>
+      </div>
+      <div class="no-print">
+        <button id="cookBtn" class="px-3 py-2 rounded-lg border plain">🍳 Mode cuisine</button>
+        <button onclick="window.print()" class="px-3 py-2 rounded-lg border plain">🖨️ Imprimer</button>
+      </div>
+    </div>
+
+    <!-- Notes + Favoris -->
+    <div id="actions" class="flex flex-wrap items-center gap-4 my-4">
+      <div id="rating" class="flex items-center gap-2">
+        <% if (avgRating) { %>
+          <span class="font-semibold"><%= avgRating %>/5</span>
+        <% } else { %>
+          <span class="muted">Pas encore de note</span>
+        <% } %>
+        <span class="muted">·</span>
+        <span class="muted text-sm"><%= ratingsCount %> vote<%= ratingsCount>1?'s':'' %></span>
+      </div>
+
+      <% if (user) { %>
+        <form method="post" action="/recipes/<%= recipe.id %>/favorite" class="inline">
+          <button class="px-3 py-1.5 rounded-lg border <%= isFavorited ? 'bg-pink-600 text-white border-pink-700' : 'bg-white plain' %>">
+            <%= isFavorited ? '♥ Retirer des favoris' : '♡ Ajouter aux favoris' %> (<%= favoritesCount %>)
+          </button>
+        </form>
+      <% } else { %>
+        <a href="/login" class="px-3 py-1.5 rounded-lg border bg-white plain">Se connecter pour ajouter aux favoris</a>
+      <% } %>
+    </div>
+
+    <!-- Ma note -->
+    <section class="mb-8 no-print">
+      <h2 class="font-bold mb-2">Votre note</h2>
+      <% if (user) { %>
+        <form method="post" action="/recipes/<%= recipe.id %>/rate" class="flex items-center gap-2">
+          <select name="value" class="border rounded-lg p-2 plain">
+            <% for (let i=1; i<=5; i++) { %>
+              <option value="<%= i %>" <%= myRating===i?'selected':'' %>><%= '★'.repeat(i) %><%= '☆'.repeat(5-i) %> (<%= i %>)</option>
+            <% } %>
+          </select>
+          <button class="px-3 py-2 rounded-lg bg-slate-900 text-white">Envoyer</button>
+        </form>
+      <% } else { %>
+        <p class="muted text-sm">Connectez-vous pour donner une note.</p>
+      <% } %>
+    </section>
+
+    <!-- Allergènes: surligner les occurrences -->
+    <% 
+      const userAll = (user && user.allergens ? user.allergens.split(',').map(s=>s.trim()).filter(Boolean) : []);
+      function hl(text){
+        let out = text;
+        userAll.forEach(a => {
+          const r = new RegExp('(' + a.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&') + ')','ig');
+          out = out.replace(r, '<mark style="background:#fde68a;padding:0 2px;border-radius:3px">$1</mark>');
+        });
+        return out;
+      }
+    %>
+
+    <div class="grid md:grid-cols-2 gap-8">
+      <section class="bg-slate-50 border rounded-xl p-5 card">
+        <h2 class="font-bold text-lg mb-2">Ingrédients</h2>
+        <pre class="whitespace-pre-wrap leading-relaxed text-slate-700"><%- hl(recipe.ingredients) %></pre>
+        <% if (userAll.length){ %><p class="text-xs muted mt-2">Allergènes suivis: <%= userAll.join(', ') %></p><% } %>
+        <div class="mt-3 no-print">
+          <label class="text-sm mr-2">Portions:</label>
+          <select id="portion" class="border rounded p-1 plain">
+            <option value="0.5">x0.5</option><option value="1" selected>x1</option><option value="2">x2</option><option value="4">x4</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="bg-slate-50 border rounded-xl p-5 card">
+        <h2 class="font-bold text-lg mb-2">Étapes</h2>
+        <pre id="steps" class="whitespace-pre-wrap leading-relaxed text-slate-700"><%= recipe.steps %></pre>
+        <% if (recipe.tips) { %>
+          <div class="mt-4">
+            <h3 class="font-semibold mb-1">Astuces & variantes</h3>
+            <pre class="whitespace-pre-wrap leading-relaxed text-slate-700"><%= recipe.tips %></pre>
+          </div>
+        <% } %>
+      </section>
+    </div>
+
+    <% if (user && user.id === recipe.user_id) { %>
+      <div class="mt-6 flex gap-3 no-print">
+        <a href="/recipes/<%= recipe.id %>/edit" class="px-4 py-2 rounded-lg bg-slate-900 text-white hover:bg-slate-800">Modifier</a>
+        <form action="/recipes/<%= recipe.id %>?_method=DELETE" method="post" onsubmit="return confirm('Envoyer cette recette à la corbeille ?')">
+          <button class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700">Supprimer</button>
+        </form>
+      </div>
+    <% } %>
+
+    <!-- Commentaires (threads) -->
+    <section id="comments" class="mt-10 print-block">
+      <h2 class="text-xl font-bold mb-3">Commentaires</h2>
+
+      <% if (user) { %>
+        <form method="post" action="/recipes/<%= recipe.id %>/comments" class="mb-4 no-print">
+          <textarea name="body" rows="3" class="w-full border rounded-lg p-2 plain" placeholder="Écrivez votre avis, vos astuces, vos variantes…"></textarea>
+          <div class="mt-2 text-right">
+            <button class="px-3 py-2 rounded-lg bg-slate-900 text-white">Publier</button>
+          </div>
+        </form>
+      <% } else { %>
+        <p class="muted mb-4">Connectez-vous pour laisser un commentaire.</p>
+      <% } %>
+
+      <div class="space-y-3">
+        <% if (!comments || comments.length === 0) { %>
+          <p class="muted">Pas encore de commentaire.</p>
+        <% } %>
+        <% (comments || []).forEach(c => { %>
+          <div class="border rounded-xl p-3 bg-white card">
+            <div class="flex items-center justify-between">
+              <p class="font-semibold"><%= c.display_name || 'Utilisateur' %></p>
+              <p class="text-xs muted"><%= new Date(c.created_at).toLocaleString() %></p>
+            </div>
+            <p class="mt-2 whitespace-pre-wrap"><%= c.body %></p>
+
+            <!-- Réponses -->
+            <div class="mt-3 pl-3 border-l">
+              <% (c.replies||[]).forEach(r => { %>
+                <div class="mt-2">
+                  <div class="flex items-center justify-between">
+                    <p class="font-semibold"><%= r.display_name || 'Utilisateur' %></p>
+                    <p class="text-xs muted"><%= new Date(r.created_at).toLocaleString() %></p>
+                  </div>
+                  <p class="whitespace-pre-wrap"><%= r.body %></p>
+                  <% if (user && r.user_id === user.id) { %>
+                    <form method="post" action="/comments/<%= r.id %>/delete" class="mt-1 text-right no-print" onsubmit="return confirm('Supprimer cette réponse ?')">
+                      <button class="px-2 py-1 rounded bg-red-600 text-white text-xs">Supprimer</button>
+                    </form>
+                  <% } %>
+                </div>
+              <% }) %>
+            </div>
+
+            <% if (user) { %>
+              <form method="post" action="/recipes/<%= recipe.id %>/comments" class="mt-2 no-print">
+                <input type="hidden" name="parent_id" value="<%= c.id %>" />
+                <textarea name="body" rows="2" class="w-full border rounded-lg p-2 plain" placeholder="Répondre…"></textarea>
+                <div class="text-right mt-1">
+                  <button class="px-2 py-1 rounded bg-slate-900 text-white text-sm">Répondre</button>
+                </div>
+              </form>
+            <% } %>
+
+            <% if (user && c.user_id === user.id) { %>
+              <form method="post" action="/comments/<%= c.id %>/delete" class="mt-2 text-right no-print" onsubmit="return confirm('Supprimer ce commentaire ?')">
+                <button class="px-2 py-1 rounded bg-red-600 text-white text-xs">Supprimer</button>
+              </form>
+            <% } %>
+          </div>
+        <% }) %>
+      </div>
+    </section>
+
+    <!-- Recommandations -->
+    <% if (recs && recs.length) { %>
+      <section class="mt-10 print-block">
+        <h2 class="text-xl font-bold mb-3">Vous aimerez aussi</h2>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <% recs.forEach(r => { %>
+            <a href="/recipes/<%= r.id %>" class="group bg-white rounded-2xl overflow-hidden border shadow-sm hover:shadow-md transition card">
+              <% if (r.image_path) { %>
+                <img src="<%= r.image_path %>" class="w-full h-32 object-cover" alt="<%= r.title %>" />
+              <% } %>
+              <div class="p-4">
+                <h3 class="font-semibold group-hover:underline"><%= r.title %></h3>
+                <p class="text-sm muted"><%= r.category %> · <%= r.difficulty %> · <%= r.duration_minutes %> min</p>
+              </div>
+            </a>
+          <% }) %>
+        </div>
+      </section>
+    <% } %>
+  </div>
+</article>
+
+<!-- Cooking mode (plein écran step-by-step + timers) -->
+<div id="cookModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 no-print">
+  <div class="bg-white rounded-2xl p-6 max-w-2xl w-full card">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-xl font-bold">Mode cuisine — <%= recipe.title %></h3>
+      <button id="closeCook" class="px-2 py-1 rounded border plain">Fermer</button>
+    </div>
+    <div id="stepContent" class="text-lg whitespace-pre-wrap min-h-[160px]"></div>
+    <div class="flex items-center justify-between mt-4">
+      <div class="flex items-center gap-2">
+        <button id="prevStep" class="px-3 py-2 rounded border plain">◀</button>
+        <span id="stepIndex" class="muted text-sm"></span>
+        <button id="nextStep" class="px-3 py-2 rounded border plain">▶</button>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="startTimer" class="px-3 py-2 rounded bg-slate-900 text-white">Démarrer minuterie</button>
+        <span id="timerLabel" class="muted text-sm">--:--</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Multiplicateur de portions (cherche les nombres dans ingrédients)
+const portionSel = document.getElementById('portion');
+const ingPre = document.querySelector('section pre');
+if (portionSel && ingPre){
+  const original = ingPre.textContent;
+  portionSel.addEventListener('change', () => {
+    const mult = parseFloat(portionSel.value || '1') || 1;
+    const scaled = original.replace(/(\d+([.,]\d+)?)/g, (m) => {
+      const v = parseFloat(m.replace(',', '.'));
+      if (isNaN(v)) return m;
+      let nv = v * mult;
+      nv = Math.round(nv * 10) / 10;
+      return (nv % 1 === 0 ? String(nv) : String(nv).replace('.', ',')); 
+    });
+    ingPre.textContent = scaled;
+  });
+}
+
+// Cooking mode
+const cookBtn = document.getElementById('cookBtn');
+const modal = document.getElementById('cookModal');
+const closeCook = document.getElementById('closeCook');
+const stepsText = document.getElementById('steps').textContent;
+const stepsArr = stepsText.split(/\n(?=\d+\))/).filter(s => s.trim().length);
+let idx = 0, timer=null, remaining=0;
+
+function renderStep(){
+  const el = document.getElementById('stepContent');
+  const s = stepsArr[idx] || '';
+  el.textContent = s.trim();
+  document.getElementById('stepIndex').textContent = (idx+1) + ' / ' + stepsArr.length;
+
+  // Détecter "10 min" dans l'étape pour la minuterie
+  const m = s.match(/(\d+)\s*min/i);
+  remaining = m ? parseInt(m[1],10)*60 : 0;
+  document.getElementById('timerLabel').textContent = remaining ? format(remaining) : '--:--';
+}
+function format(sec){ const m = Math.floor(sec/60), s = sec%60; return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0'); }
+function startTimer(){
+  if (!remaining) return alert("Pas de durée détectée dans cette étape.");
+  if (timer) clearInterval(timer);
+  timer = setInterval(()=>{
+    remaining--;
+    document.getElementById('timerLabel').textContent = format(Math.max(remaining,0));
+    if (remaining<=0){ clearInterval(timer); alert("Étape terminée !"); }
+  }, 1000);
+}
+
+document.getElementById('prevStep')?.addEventListener('click', ()=>{ idx = Math.max(0, idx-1); renderStep(); });
+document.getElementById('nextStep')?.addEventListener('click', ()=>{ idx = Math.min(stepsArr.length-1, idx+1); renderStep(); });
+document.getElementById('startTimer')?.addEventListener('click', startTimer);
+
+cookBtn?.addEventListener('click', ()=>{ modal.classList.remove('hidden'); idx=0; renderStep(); });
+closeCook?.addEventListener('click', ()=>{ modal.classList.add('hidden'); if(timer) clearInterval(timer); });
+
+// Raccourcis clavier
+document.addEventListener('keydown', (e)=>{
+  if(modal.classList.contains('hidden')) return;
+  if(e.key==='ArrowLeft') document.getElementById('prevStep').click();
+  if(e.key==='ArrowRight') document.getElementById('nextStep').click();
+});
+</script>

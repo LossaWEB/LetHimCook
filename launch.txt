@@ -1,0 +1,4 @@
+http://localhost:3000/dev/seed - Seed ok. Compte: demo@lethimcook.local / mot de passe: 123456
+
+http://localhost:3000/
+

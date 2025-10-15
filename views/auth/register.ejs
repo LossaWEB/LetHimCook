@@ -1,0 +1,22 @@
+<h1 class="text-3xl font-extrabold mb-6">Créer un compte</h1>
+<% if (error) { %><p class="mb-4 text-red-600" role="alert"><%= error %></p><% } %>
+
+<form method="post" class="space-y-4 max-w-md bg-white border rounded-2xl p-6 card" aria-labelledby="registerTitle">
+  <div>
+    <label for="display_name" class="block text-sm font-medium">Pseudo</label>
+    <input id="display_name" name="display_name" required class="mt-1 w-full border rounded-lg p-2 plain" />
+  </div>
+  <div>
+    <label for="remail" class="block text-sm font-medium">Email</label>
+    <input id="remail" name="email" type="email" autocomplete="email" required class="mt-1 w-full border rounded-lg p-2 plain" />
+  </div>
+  <div>
+    <label for="rpassword" class="block text-sm font-medium">Mot de passe</label>
+    <input id="rpassword" name="password" type="password" autocomplete="new-password" required class="mt-1 w-full border rounded-lg p-2 plain" />
+  </div>
+  <div>
+    <label for="allergens" class="block text-sm font-medium">Allergènes (optionnel)</label>
+    <input id="allergens" name="allergens" class="mt-1 w-full border rounded-lg p-2 plain" placeholder="gluten, lait, oeuf..." />
+  </div>
+  <button class="px-4 py-2 bg-slate-900 text-white rounded-lg w-full">S’inscrire</button>
+</form>

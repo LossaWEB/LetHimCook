@@ -1,0 +1,17 @@
+<h1 class="text-3xl font-extrabold mb-6">Créer une recette rapide</h1>
+
+<form method="post" action="/recipes/quick-new" class="space-y-4 bg-white border rounded-2xl p-6 card">
+  <div>
+    <label class="block text-sm font-medium">Titre</label>
+    <input class="mt-1 border rounded-lg p-2 w-full plain" name="title" placeholder="Titre de la recette" required />
+  </div>
+  <div>
+    <label class="block text-sm font-medium">Ingrédients</label>
+    <textarea class="mt-1 border rounded-lg p-2 w-full plain" name="ingredients" rows="5" placeholder="- ..." ></textarea>
+  </div>
+  <div>
+    <label class="block text-sm font-medium">Étapes</label>
+    <textarea class="mt-1 border rounded-lg p-2 w-full plain" name="steps" rows="6" placeholder="1) ..." ></textarea>
+  </div>
+  <button class="px-4 py-2 rounded-lg bg-slate-900 text-white">Créer le brouillon</button>
+</form>

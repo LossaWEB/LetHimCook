@@ -1,0 +1,14 @@
+<h1 class="text-3xl font-extrabold mb-6">Connexion</h1>
+<% if (error) { %><p class="mb-4 text-red-600" role="alert"><%= error %></p><% } %>
+
+<form method="post" class="space-y-4 max-w-md bg-white border rounded-2xl p-6 card" aria-labelledby="loginTitle">
+  <div>
+    <label for="email" class="block text-sm font-medium">Email</label>
+    <input id="email" name="email" type="email" autocomplete="username" required class="mt-1 w-full border rounded-lg p-2 plain" />
+  </div>
+  <div>
+    <label for="password" class="block text-sm font-medium">Mot de passe</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" required class="mt-1 w-full border rounded-lg p-2 plain" />
+  </div>
+  <button class="px-4 py-2 bg-slate-900 text-white rounded-lg w-full">Se connecter</button>
+</form>

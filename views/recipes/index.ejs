@@ -1,0 +1,68 @@
+<h1 class="text-3xl font-extrabold mb-6">Toutes les recettes</h1>
+
+<form class="flex flex-wrap items-center gap-3 mb-6 bg-white rounded-xl border p-4 card">
+  <input class="border rounded-lg p-2 grow min-w-[220px] plain" name="q"
+         placeholder="Recherche (ex: 'ing:tomate sans:lait max:30 diff:facile')"
+         value="<%= q %>"/>
+
+  <select class="border rounded-lg p-2 plain" name="category">
+    <option value="all">Toutes catégories</option>
+    <option <%= category==='Entrée'?'selected':'' %>>Entrée</option>
+    <option <%= category==='Plat'?'selected':'' %>>Plat</option>
+    <option <%= category==='Dessert'?'selected':'' %>>Dessert</option>
+  </select>
+
+  <select class="border rounded-lg p-2 plain" name="difficulty">
+    <option value="all">Toutes difficultés</option>
+    <option <%= difficulty==='Facile'?'selected':'' %>>Facile</option>
+    <option <%= difficulty==='Moyen'?'selected':'' %>>Moyen</option>
+    <option <%= difficulty==='Difficile'?'selected':'' %>>Difficile</option>
+  </select>
+
+  <select class="border rounded-lg p-2 plain" name="tag">
+    <option value="all">Tous les tags</option>
+    <% (allTags||[]).forEach(t => { %>
+      <option value="<%= t.name %>" <%= tag===t.name?'selected':'' %>><%= t.name %></option>
+    <% }) %>
+  </select>
+
+  <select class="border rounded-lg p-2 plain" name="sort" title="Trier par">
+    <option value="created_at" <%= sort==='created_at'?'selected':'' %>>Plus récentes</option>
+    <option value="title" <%= sort==='title'?'selected':'' %>>Titre</option>
+    <option value="duration_minutes" <%= sort==='duration_minutes'?'selected':'' %>>Durée</option>
+    <option value="pop" <%= sort==='pop'?'selected':'' %>>Popularité</option>
+  </select>
+
+  <select class="border rounded-lg p-2 plain" name="order" title="Ordre">
+    <option value="desc" <%= order==='desc'?'selected':'' %>>↓ Desc</option>
+    <option value="asc"  <%= order==='asc' ?'selected':'' %>>↑ Asc</option>
+  </select>
+
+  <input type="hidden" name="page" value="1" />
+  <button class="px-4 py-2 rounded-lg bg-slate-900 text-white">Appliquer</button>
+</form>
+
+<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+  <% recipes.forEach(r => { %>
+    <a href="/recipes/<%= r.id %>" class="group bg-white rounded-2xl overflow-hidden border shadow-sm hover:shadow-md transition card">
+      <% if (r.image_path) { %>
+        <img src="<%= r.image_path %>" class="w-full h-40 object-cover" alt="<%= r.title %>" />
+      <% } %>
+      <div class="p-4">
+        <h3 class="font-semibold group-hover:underline"><%= r.title %></h3>
+        <p class="text-sm muted"><%= r.category %> · <%= r.difficulty %> · <%= r.duration_minutes %> min</p>
+      </div>
+    </a>
+  <% }) %>
+</div>
+
+<% if (totalPages > 1) { %>
+  <nav class="mt-8 flex flex-wrap items-center gap-2">
+    <% const mk = (p) => `/recipes?q=${encodeURIComponent(q)}&category=${encodeURIComponent(category)}&difficulty=${encodeURIComponent(difficulty)}&tag=${encodeURIComponent(tag)}&sort=${encodeURIComponent(sort)}&order=${encodeURIComponent(order)}&page=${p}`; %>
+    <a href="<%= mk(Math.max(1, page-1)) %>" class="px-3 py-2 rounded border bg-white plain <%= page===1?'opacity-50 pointer-events-none':'' %>">Précédent</a>
+    <% for (let p=1;p<=totalPages;p++){ %>
+      <a href="<%= mk(p) %>" class="px-3 py-2 rounded border <%= p===page?'bg-slate-900 text-white':'bg-white plain' %>"><%= p %></a>
+    <% } %>
+    <a href="<%= mk(Math.min(totalPages, page+1)) %>" class="px-3 py-2 rounded border bg-white plain <%= page===totalPages?'opacity-50 pointer-events-none':'' %>">Suivant</a>
+  </nav>
+<% } %>

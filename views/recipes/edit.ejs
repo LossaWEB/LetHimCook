@@ -1,0 +1,108 @@
+<h1 class="text-3xl font-extrabold mb-6">Modifier la recette</h1>
+
+<form method="post" enctype="multipart/form-data" class="grid md:grid-cols-2 gap-4 bg-white border rounded-2xl p-6 card" action="/recipes/<%= recipe.id %>">
+  <div>
+    <label class="block text-sm font-medium">Titre</label>
+    <input class="mt-1 border rounded-lg p-2 w-full plain" name="title" value="<%= recipe.title %>" required/>
+  </div>
+  <div>
+    <label class="block text-sm font-medium">Catégorie</label>
+    <select class="mt-1 border rounded-lg p-2 w-full plain" name="category" required>
+      <option <%= recipe.category==='Entrée'?'selected':'' %>>Entrée</option>
+      <option <%= recipe.category==='Plat'?'selected':'' %>>Plat</option>
+      <option <%= recipe.category==='Dessert'?'selected':'' %>>Dessert</option>
+    </select>
+  </div>
+  <div>
+    <label class="block text-sm font-medium">Difficulté</label>
+    <select class="mt-1 border rounded-lg p-2 w-full plain" name="difficulty" required>
+      <option <%= recipe.difficulty==='Facile'?'selected':'' %>>Facile</option>
+      <option <%= recipe.difficulty==='Moyen'?'selected':'' %>>Moyen</option>
+      <option <%= recipe.difficulty==='Difficile'?'selected':'' %>>Difficile</option>
+    </select>
+  </div>
+  <div>
+    <label class="block text-sm font-medium">Durée totale (min)</label>
+    <input class="mt-1 border rounded-lg p-2 w-full plain" name="duration_minutes" type="number" value="<%= recipe.duration_minutes %>" />
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium">Temps actif (min)</label>
+    <input class="mt-1 border rounded-lg p-2 w-full plain" name="time_active" type="number" value="<%= recipe.time_active || '' %>" />
+  </div>
+  <div>
+    <label class="block text-sm font-medium">Temps de repos (min)</label>
+    <input class="mt-1 border rounded-lg p-2 w-full plain" name="time_rest" type="number" value="<%= recipe.time_rest || '' %>" />
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium">Tags (séparés par des virgules)</label>
+    <input class="mt-1 border rounded-lg p-2 w-full plain" name="tags" value="<%= tags %>" />
+  </div>
+
+  <div class="col-span-full grid md:grid-cols-2 gap-4">
+    <div>
+      <label class="block text-sm font-medium">Calories (kcal)</label>
+      <input class="mt-1 border rounded-lg p-2 w-full plain" name="kcal" type="number" value="<%= recipe.kcal || '' %>" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium">Protéines (g)</label>
+      <input class="mt-1 border rounded-lg p-2 w-full plain" name="protein" type="number" value="<%= recipe.protein || '' %>" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium">Lipides (g)</label>
+      <input class="mt-1 border rounded-lg p-2 w-full plain" name="fat" type="number" value="<%= recipe.fat || '' %>" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium">Glucides (g)</label>
+      <input class="mt-1 border rounded-lg p-2 w-full plain" name="carb" type="number" value="<%= recipe.carb || '' %>" />
+    </div>
+  </div>
+
+  <div class="col-span-full">
+    <label class="block text-sm font-medium">Image (optionnel)</label>
+    <div id="dropzone" class="border-2 border-dashed rounded-xl p-6 text-center plain">
+      <% if (recipe.image_path) { %>
+        <img class="w-40 h-28 object-cover rounded border mx-auto mb-2" src="<%= recipe.image_path %>" alt="Image actuelle" />
+      <% } %>
+      <p class="muted mb-2">Déposez une nouvelle image ici ou choisissez un fichier</p>
+      <input id="fileInput" class="border rounded-lg p-2 w-full plain" type="file" name="image" accept="image/*" />
+      <img id="preview" class="w-40 h-28 object-cover rounded border mt-3 hidden mx-auto" alt="Aperçu" />
+    </div>
+  </div>
+
+  <div class="col-span-full">
+    <label class="block text-sm font-medium">Ingrédients</label>
+    <textarea class="mt-1 border rounded-lg p-2 w-full plain" name="ingredients" rows="6"><%= recipe.ingredients %></textarea>
+  </div>
+
+  <div class="col-span-full">
+    <label class="block text-sm font-medium">Étapes</label>
+    <textarea class="mt-1 border rounded-lg p-2 w-full plain" name="steps" rows="8"><%= recipe.steps %></textarea>
+  </div>
+
+  <div class="col-span-full">
+    <label class="block text-sm font-medium">Astuces & variantes</label>
+    <textarea class="mt-1 border rounded-lg p-2 w-full plain" name="tips" rows="3"><%= recipe.tips || '' %></textarea>
+  </div>
+
+  <button class="px-4 py-2 rounded-lg bg-slate-900 text-white col-span-full">Enregistrer</button>
+</form>
+
+<script>
+const dz = document.getElementById('dropzone');
+const fi = document.getElementById('fileInput');
+const pv = document.getElementById('preview');
+
+dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('bg-slate-50'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('bg-slate-50'));
+dz.addEventListener('drop', (e) => { e.preventDefault(); dz.classList.remove('bg-slate-50'); if(e.dataTransfer.files[0]){ fi.files = e.dataTransfer.files; showPreview(); }});
+fi.addEventListener('change', showPreview);
+
+function showPreview(){
+  const f = fi.files && fi.files[0];
+  if (!f){ pv.classList.add('hidden'); pv.src=''; return; }
+  pv.src = URL.createObjectURL(f);
+  pv.classList.remove('hidden');
+}
+</script>

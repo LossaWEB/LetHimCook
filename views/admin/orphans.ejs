@@ -1,0 +1,14 @@
+<h1 class="text-3xl font-extrabold mb-6">Fichiers images orphelins</h1>
+
+<% if (!orphans || !orphans.length) { %>
+  <p class="muted">Aucune image orpheline. Votre dossier <code>/public/uploads</code> est propre.</p>
+<% } else { %>
+  <form method="post" action="/admin/orphans/cleanup" class="space-y-3 bg-white border rounded-2xl p-6 card">
+    <p class="muted">Ces fichiers ne sont référencés par aucune recette :</p>
+    <ul class="list-disc pl-6">
+      <% orphans.forEach(f => { %><li><code><%= f %></code></li><% }) %>
+    </ul>
+    <input type="hidden" name="files" value="<%= orphans.join(',') %>" />
+    <button class="px-4 py-2 rounded-lg bg-red-600 text-white">Supprimer les fichiers listés</button>
+  </form>
+<% } %>
